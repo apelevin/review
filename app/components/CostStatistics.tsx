@@ -3,6 +3,7 @@
 interface StepCostStatistics {
   step: number;
   stepName: string;
+  model?: string;
   calls: number;
   tokens: {
     input: number;
@@ -102,7 +103,7 @@ export default function CostStatistics({ statistics }: CostStatisticsProps) {
   return (
     <div className="w-full mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Статистика расходов (gpt-5.1)
+        Статистика расходов
       </h3>
 
       <div className="space-y-4">
@@ -114,9 +115,16 @@ export default function CostStatistics({ statistics }: CostStatisticsProps) {
               className="p-3 bg-white border border-gray-200 rounded-lg"
             >
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-gray-800">
-                  Шаг {step.step}: {step.stepName}
-                </h4>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-800">
+                    Шаг {step.step}: {step.stepName}
+                  </h4>
+                  {step.model && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Модель: {step.model}
+                    </p>
+                  )}
+                </div>
                 <span className="text-sm font-semibold text-blue-600">
                   {formatCost(step.cost.total)}
                 </span>
