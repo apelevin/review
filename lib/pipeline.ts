@@ -7,6 +7,7 @@ export interface LegalPosition {
   level1?: {
     branch?: string;
     dispute_category?: string;
+    case_number?: string; // Номер дела из судебного акта
   };
   level2?: {
     parties?: string;
@@ -45,6 +46,7 @@ export interface LegalPosition {
 }
 
 export interface CaseCard {
+  caseNumber?: string; // Номер дела для цитирования
   summary: string; // Краткая фабула и предмет спора (1-2 строки)
   keyFindings: string[]; // Ключевые правовые выводы (3-5 буллетов)
   appliedNorms: string; // Применённые нормы (1-2 строки)
@@ -74,6 +76,7 @@ export interface ReviewSkeleton {
 
 export interface DocumentProcessingResult {
   fileName: string;
+  caseNumber?: string; // Номер дела, извлеченный из документа
   markdown: string;
   legalPosition: string; // JSON строка (10 уровней)
   legalPositionParsed?: LegalPosition; // Распарсенный JSON (10 уровней)
@@ -196,9 +199,13 @@ async function processDocumentStep0(
       );
     }
 
+    // Извлекаем номер дела из правовой позиции
+    const caseNumber = legalPositionParsed?.level1?.case_number || '';
+
     return {
       result: {
         fileName,
+        caseNumber,
         markdown,
         legalPosition: legalPositionJson, // Сохраняем оригинальную JSON строку
         legalPositionParsed, // Сохраняем распарсенный объект
@@ -269,6 +276,11 @@ async function processStep1(
 
     // Парсим карточку дела
     const caseCard = JSON.parse(caseCardJson) as CaseCard;
+    
+    // Убеждаемся, что номер дела передан в карточку
+    if (!caseCard.caseNumber && document.caseNumber) {
+      caseCard.caseNumber = document.caseNumber;
+    }
 
     return {
       result: {
@@ -323,6 +335,7 @@ async function processStep3(
     const cardsData = caseCards.map((card, index) => ({
       index: index + 1,
       fileName: documents[index]?.fileName || `Документ ${index + 1}`,
+      caseNumber: documents[index]?.caseNumber || card.caseNumber || '',
       ...card,
     }));
     
@@ -388,6 +401,7 @@ async function processStep4(
     const cardsContext = caseCards.map((card, index) => ({
       index: index + 1,
       fileName: documents[index]?.fileName || `Документ ${index + 1}`,
+      caseNumber: documents[index]?.caseNumber || card.caseNumber || '',
       ...card,
     }));
     const cardsJson = JSON.stringify(cardsContext, null, 2);

@@ -23,6 +23,7 @@
 
 ```json
 {
+  "caseNumber": "",
   "summary": "",
   "keyFindings": [],
   "appliedNorms": "",
@@ -31,6 +32,13 @@
 ```
 
 ## Правила заполнения:
+
+### **caseNumber**
+
+* Номер дела из level1.case_number правовой позиции.
+* Если номер дела отсутствует — используй `""`.
+
+---
 
 ### **summary**
 

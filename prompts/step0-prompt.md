@@ -33,7 +33,7 @@
 
 ```json
 {
-  "level1": { "branch": "", "dispute_category": "" },
+  "level1": { "branch": "", "dispute_category": "", "case_number": "" },
   "level2": { "parties": "", "relationship_type": "" },
   "level3": { "claims_main": "", "claims_secondary": [] },
   "level4": { "norms_key": [], "norms_secondary": [] },
@@ -52,6 +52,7 @@
 
 * `branch`: отрасль (1 слово, максимум 2).
 * `dispute_category`: узкая категория (если не указано — `""`).
+* `case_number`: номер дела из судебного акта (например, "А40-12345/2024", "2-1234/2024"). Если номер дела не найден — `""`.
 
 ### **Level 2**
 
