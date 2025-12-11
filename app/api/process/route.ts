@@ -41,9 +41,29 @@ export async function POST(request: NextRequest) {
     // но для MVP используем простой подход
     const result = await processDocumentsPipeline(files);
 
+    // Логируем детали ошибок для отладки
+    if (result.error) {
+      console.error('Pipeline error:', result.error);
+      if (result.documents && result.documents.length > 0) {
+        result.documents.forEach((doc, index) => {
+          if (doc.error) {
+            console.error(`Document ${index + 1} (${doc.fileName}) error:`, doc.error);
+          }
+        });
+      }
+    }
+
     if (result.error) {
       return NextResponse.json(
-        { error: result.error, documents: result.documents },
+        { 
+          error: result.error, 
+          documents: result.documents.map((doc) => ({
+            fileName: doc.fileName,
+            hasError: !!doc.error,
+            error: doc.error,
+          })),
+          costStatistics: result.costStatistics,
+        },
         { status: 500 }
       );
     }

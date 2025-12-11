@@ -53,13 +53,24 @@ export default function Home() {
 
       const data = await response.json();
 
+      // Всегда устанавливаем документы, даже если есть ошибка, чтобы показать детали
+      if (data.documents && Array.isArray(data.documents)) {
+        setDocuments(data.documents);
+      }
+      
+      if (data.costStatistics) {
+        setCostStatistics(data.costStatistics);
+      }
+
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при обработке документов');
+        // Если есть документы с ошибками, показываем их
+        const errorMessage = data.error || 'Ошибка при обработке документов';
+        setError(errorMessage);
+        setProgress({ step: 4, current: 1, total: 1, message: 'Обработка завершена с ошибками' });
+        return;
       }
 
       setReview(data.review || '');
-      setDocuments(data.documents || []);
-      setCostStatistics(data.costStatistics || null);
       setProgress({ step: 4, current: 1, total: 1, message: 'Обработка завершена' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка при обработке документов');
@@ -106,9 +117,42 @@ export default function Home() {
             error={error}
           />
 
-          {review && (
+          {(review || (documents.length > 0 && !isProcessing)) && (
             <>
-              <ReviewDisplay review={review} documents={documents} costStatistics={costStatistics} />
+              {review && (
+                <ReviewDisplay review={review} documents={documents} costStatistics={costStatistics} />
+              )}
+              {!review && documents.length > 0 && (
+                <div className="w-full mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="text-lg font-semibold text-red-900 mb-3">
+                    Обработанные документы:
+                  </h3>
+                  <ul className="space-y-2">
+                    {documents.map((doc, index) => (
+                      <li key={index} className="text-sm flex items-start">
+                        {doc.hasError ? (
+                          <>
+                            <span className="text-red-500 mr-2 mt-0.5">✗</span>
+                            <div className="flex-1">
+                              <span className="font-medium text-red-700">{doc.fileName}</span>
+                              {doc.error && (
+                                <div className="text-red-600 mt-1 ml-4 text-xs">
+                                  {doc.error}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                            <span className="text-gray-700">{doc.fileName}</span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="mt-6">
                 <button
                   onClick={handleReset}
